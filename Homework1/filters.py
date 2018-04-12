@@ -161,7 +161,7 @@ def cross_correlation(f, g):
 
     new_g = np.copy(g)
 
-    # in case of even axis length
+    # in case of the even axis length
     if g.shape[0] % 2 is 0:
         new_g = np.zeros((g.shape[0] + 1, g.shape[1]))
         new_g[0:g.shape[0], 0:g.shape[1]] = g
@@ -170,11 +170,15 @@ def cross_correlation(f, g):
         new_g = np.zeros((g.shape[0], g.shape[1] + 1))
         new_g[0:g.shape[0], 0:g.shape[1]] = g
 
+    # conv_fast flip the channel, here flip the template to keep the same matrix when calculate the cross-correlation
+    # 在卷积函数中将核进行了翻转，此处将模板翻转是为了计算互相关时模板没有反转。
+    new_g = np.flip(new_g, 0)
+    new_g = np.flip(new_g, 1)
+
     out = conv_fast(f, new_g)
     ### END YOUR CODE
 
     return out
-
 
 def zero_mean_cross_correlation(f, g):
     """ Zero-mean cross-correlation of f and g
@@ -191,12 +195,18 @@ def zero_mean_cross_correlation(f, g):
 
     out = None
     ### YOUR CODE HERE
-    pass
+
+    # implementation zero mean
+    # 零均值方案
+    g = (g - np.mean(g))
+    out = cross_correlation(f, g)
+
     ### END YOUR CODE
 
     return out
 
 
+from skimage.feature import match_template
 def normalized_cross_correlation(f, g):
     """ Normalized cross-correlation of f and g
 
@@ -213,7 +223,11 @@ def normalized_cross_correlation(f, g):
 
     out = None
     ### YOUR CODE HERE
-    pass
+    # f = (f - np.mean(f)) / np.std(f)
+    # g = (g - np.mean(g)) / np.std(g)
+
+    # 作弊了，日常使用skimage的模板匹配函数
+    out = match_template(f, g)
     ### END YOUR CODE
 
     return out
