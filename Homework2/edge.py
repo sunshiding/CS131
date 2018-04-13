@@ -28,7 +28,13 @@ def conv(image, kernel):
     padded = np.pad(image, pad_width, mode='edge')
 
     ### YOUR CODE HERE
-    pass
+    for X in range(Wi):
+        for Y in range(Hi):
+            # trans X,Y to indexs in imgBig matrix
+            localX = X + pad_width1
+            localY = Y + pad_width0
+            imageArea = padded[localY - pad_width0:localY + pad_width0 + 1, localX - pad_width1:localX + pad_width1 + 1]
+            out[Y, X] = np.sum(np.multiply(imageArea, kernel))
     ### END YOUR CODE
 
     return out
@@ -53,8 +59,13 @@ def gaussian_kernel(size, sigma):
 
     kernel = np.zeros((size, size))
 
+    k = int(size / 2)
+
     ### YOUR CODE HERE
-    pass
+    for i in range(size):
+        for j in range(size):
+            kernel[i, j] = 1 / (2 * np.pi * np.square(sigma)) * np.exp(
+                -1 * (np.square(i - k) + np.square(j - k)) / (2 * np.square(sigma)))
     ### END YOUR CODE
 
     return kernel
@@ -75,7 +86,11 @@ def partial_x(img):
     out = None
 
     ### YOUR CODE HERE
-    pass
+    kernel = np.array([[0, 0, 0],
+                       [-0.5, 0, 0.5],
+                       [0, 0, 0]])
+    out = conv(img, kernel)
+
     ### END YOUR CODE
 
     return out
@@ -96,7 +111,10 @@ def partial_y(img):
     out = None
 
     ### YOUR CODE HERE
-    pass
+    kernel = np.array([[0, -0.5, 0],
+                       [0, 0, 0],
+                       [0, 0.5, 0]])
+    out = conv(img, kernel)
     ### END YOUR CODE
 
     return out
@@ -118,7 +136,17 @@ def gradient(img):
     theta = np.zeros(img.shape)
 
     ### YOUR CODE HERE
-    pass
+    Gx = partial_x(img)
+    Gy = partial_y(img)
+    G = np.sqrt(np.square(Gx) + np.square(Gy))
+
+    # for i in range(img.shape[0]):
+    #     for j in range(img.shape[1]):
+    #         if G[i,j] < 0.00001:
+    #             G[i,j] = 0.00001
+    #         theta[i,j] = np.arctan2(Gy[i,j], Gx[i,j])
+
+    theta = np.arctan2(Gy, Gx)
     ### END YOUR CODE
 
     return G, theta
@@ -144,7 +172,36 @@ def non_maximum_suppression(G, theta):
     theta = np.floor((theta + 22.5) / 45) * 45
 
     ### BEGIN YOUR CODE
-    pass
+    pos_neg = np.zeros((3, 3))
+    pos_neg[1, 1] = 1
+
+    if theta[0, 0] == 0.0:
+        pos_neg[1, 0] = 1
+        pos_neg[1, 2] = 1
+    elif theta[0, 0] == 45.0:
+        pos_neg[0, 2] = 1
+        pos_neg[2, 0] = 1
+    elif theta[0, 0] == 90.0:
+        pos_neg[0, 1] = 1
+        pos_neg[2, 1] = 1
+    elif theta[0, 0] == 135.0:
+        pos_neg[0, 0] = 1
+        pos_neg[2, 2] = 1
+    else:
+        print("Error")
+
+    biggerImg = np.zeros((H + 2, W + 2))
+    biggerImg[1:H + 1, 1:W + 1] = G
+
+    for Y in range(H):
+        for X in range(W):
+            localY = Y + 1
+            localX = X + 1
+
+            imageArea = biggerImg[localY - 1:localY + 2, localX - 1:localX + 2]
+
+            out[Y, X] = np.max(np.multiply(imageArea, pos_neg))
+
     ### END YOUR CODE
 
     return out
