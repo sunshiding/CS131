@@ -15,3 +15,8 @@ It covers basic linear algebra that would be helpful through the course.
 Homework 1 starts off the topics in computer vision by understanding concepts such as convolutions, linear systems and different kernels and how to design them to find certains signals in images.
 
 完成时间：2018.4.12
+
+### Homework2: Edges - Smart car lane detection
+Homework 2 focuses on edge detection, applying it to lane detection to aid self driving cars.
+
+进行中
