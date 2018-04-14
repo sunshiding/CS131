@@ -27,14 +27,21 @@ def conv(image, kernel):
     pad_width = ((pad_width0, pad_width0), (pad_width1, pad_width1))
     padded = np.pad(image, pad_width, mode='edge')
 
+
     ### YOUR CODE HERE
-    for X in range(Wi):
-        for Y in range(Hi):
+
+    # flip the kernel
+    kernel = np.flip(kernel, 0)
+    kernel = np.flip(kernel, 1)
+
+    for Y in range(Hi):
+        for X in range(Wi):
             # trans X,Y to indexs in imgBig matrix
-            localX = X + pad_width1
             localY = Y + pad_width0
+            localX = X + pad_width1
             imageArea = padded[localY - pad_width0:localY + pad_width0 + 1, localX - pad_width1:localX + pad_width1 + 1]
             out[Y, X] = np.sum(np.multiply(imageArea, kernel))
+
     ### END YOUR CODE
 
     return out
@@ -87,7 +94,7 @@ def partial_x(img):
 
     ### YOUR CODE HERE
     kernel = np.array([[0, 0, 0],
-                       [-0.5, 0, 0.5],
+                       [0.5, 0, -0.5],
                        [0, 0, 0]])
     out = conv(img, kernel)
 
@@ -111,9 +118,9 @@ def partial_y(img):
     out = None
 
     ### YOUR CODE HERE
-    kernel = np.array([[0, -0.5, 0],
+    kernel = np.array([[0, 0.5, 0],
                        [0, 0, 0],
-                       [0, 0.5, 0]])
+                       [0, -0.5, 0]])
     out = conv(img, kernel)
     ### END YOUR CODE
 
@@ -140,17 +147,19 @@ def gradient(img):
     Gy = partial_y(img)
     G = np.sqrt(np.square(Gx) + np.square(Gy))
 
+
     # for i in range(img.shape[0]):
     #     for j in range(img.shape[1]):
     #         if G[i,j] < 0.00001:
     #             G[i,j] = 0.00001
     #         theta[i,j] = np.arctan2(Gy[i,j], Gx[i,j])
 
-    theta = np.arctan2(Gy, Gx)
+    theta = np.arctan2(Gy, Gx) * 180 / np.pi
+    theta = theta % 360
+
     ### END YOUR CODE
 
     return G, theta
-
 
 def non_maximum_suppression(G, theta):
     """ Performs non-maximum suppression
@@ -169,7 +178,7 @@ def non_maximum_suppression(G, theta):
     out = np.zeros((H, W))
 
     # Round the gradient direction to the nearest 45 degrees
-    theta = np.floor((theta + 22.5) / 45) * 45
+    theta = np.floor((theta + 22.5) / 45) * 45 % 180
 
     ### BEGIN YOUR CODE
     pos_neg = np.zeros((3, 3))
@@ -223,11 +232,22 @@ def double_thresholding(img, high, low):
             higher threshould and above the lower threshold.
     """
 
-    strong_edges = np.zeros(img.shape)
-    weak_edges = np.zeros(img.shape)
+    strong_edges = np.zeros(img.shape, dtype=bool)  # add dtype=bool
+    weak_edges = np.zeros(img.shape, dtype=bool)
 
     ### YOUR CODE HERE
-    pass
+    for Y in range(img.shape[0]):
+        for X in range(img.shape[1]):
+            if img[Y, X] >= high:
+                strong_edges[Y, X] = True
+                weak_edges[Y, X] = False
+            elif low <= img[Y, X] < high:
+                strong_edges[Y, X] = False
+                weak_edges[Y, X] = True
+            else:
+                strong_edges[Y, X] = False
+                weak_edges[Y, X] = False
+
     ### END YOUR CODE
 
     return strong_edges, weak_edges
@@ -281,7 +301,21 @@ def link_edges(strong_edges, weak_edges):
     edges = np.zeros((H, W))
 
     ### YOUR CODE HERE
-    pass
+    for index in indices:
+        y = index[0]
+        x = index[1]
+        edges[y, x] = 1  # label itself
+
+        neighbor = get_neighbors(y, x, H, W)
+        for neighborIndex in neighbor:
+            neighborY = neighborIndex[0]
+            neighborX = neighborIndex[1]
+            if strong_edges[neighborY, neighborX]:
+                edges[neighborY, neighborX] = 1
+
+            if weak_edges[neighborY, neighborX]:
+                edges[neighborY, neighborX] = 1
+
     ### END YOUR CODE
 
     return edges
@@ -300,7 +334,12 @@ def canny(img, kernel_size=5, sigma=1.4, high=20, low=15):
         edge: numpy array of shape(H, W)
     """
     ### YOUR CODE HERE
-    pass
+    kernel = gaussian_kernel(kernel_size, sigma)
+    smoothed = conv(img, kernel)
+    G, theta = gradient(smoothed)
+    nms = non_maximum_suppression(G, theta)
+    strong_edges, weak_edges = double_thresholding(nms, high, low)
+    edge = link_edges(strong_edges, weak_edges)
     ### END YOUR CODE
 
     return edge
