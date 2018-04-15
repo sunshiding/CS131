@@ -367,6 +367,7 @@ def hough_transform(img):
     thetas = np.deg2rad(np.arange(-90.0, 90.0))
 
     # Cache some reusable values
+    # 避免多次计算三角函数
     cos_t = np.cos(thetas)
     sin_t = np.sin(thetas)
     num_thetas = len(thetas)
@@ -379,7 +380,10 @@ def hough_transform(img):
     # Find rho corresponding to values in thetas
     # and increment the accumulator in the corresponding coordiate.
     ### YOUR CODE HERE
-    pass
+    for i in range(ys.shape[0]):
+        for theta in range(num_thetas):
+            rho = int(xs[i] * cos_t[theta] + ys[i] * sin_t[theta])
+            accumulator[rho][theta] += 1
     ### END YOUR CODE
 
     return accumulator, rhos, thetas

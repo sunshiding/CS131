@@ -36,5 +36,8 @@ Homework 2 focuses on edge detection, applying it to lane detection to aid self 
 4. Double thresholding
 5. Edge tracking by hysterisis
 #### Part 2: Lane Detection
+1. Detect edges using the Canny edge detector.
+2. Extract the edges in the region of interest (a triangle covering the bottom corners and the center of the image).
+3. Run Hough transform to detect lanes.
 
 进行中
