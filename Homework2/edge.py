@@ -209,7 +209,10 @@ def non_maximum_suppression(G, theta):
 
             imageArea = biggerImg[localY - 1:localY + 2, localX - 1:localX + 2]
 
-            out[Y, X] = np.max(np.multiply(imageArea, pos_neg))
+            if imageArea[1, 1] != np.max(np.multiply(imageArea, pos_neg)):
+                out[Y, X] = 0
+            else:
+                out[Y, X] = imageArea[1, 1]
 
     ### END YOUR CODE
 
