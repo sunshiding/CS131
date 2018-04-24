@@ -5,7 +5,6 @@ from scipy.ndimage import affine_transform
 pad = lambda x: np.hstack([x, np.ones((x.shape[0], 1))])
 unpad = lambda x: x[:, :-1]
 
-
 def plot_matches(ax, image1, image2, keypoints1, keypoints2, matches,
                  keypoints_color='k', matches_color=None, only_matches=False):
     """Plot matched features.
@@ -126,8 +125,8 @@ def get_output_space(img_ref, imgs, transforms):
 
     return output_shape, offset
 
-
 def warp_image(img, H, output_shape, offset):
+
     # Note about affine_transfomr function:
     # Given an output image pixel index vector o,
     # the pixel value is determined from the input image at position
@@ -141,3 +140,4 @@ def warp_image(img, H, output_shape, offset):
                                   cval=-1)
 
     return img_warped
+
