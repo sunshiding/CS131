@@ -56,7 +56,8 @@ def simple_descriptor(patch):
     Describe the patch by normalizing the image values into a standard 
     normal distribution (having mean of 0 and standard deviation of 1) 
     and then flattening into a 1D array. 
-    
+
+
     The normalization will make the descriptor more robust to change 
     in lighting condition.
     
@@ -71,7 +72,13 @@ def simple_descriptor(patch):
     """
     feature = []
     ### YOUR CODE HERE
-    pass
+    mean = np.mean(patch)
+    sigma = np.std(patch)
+    if sigma == 0.0:
+        sigma = 1
+
+    normalized = (patch - mean) / sigma
+    feature = normalized.flatten()
     ### END YOUR CODE
     return feature
 
@@ -116,15 +123,33 @@ def match_descriptors(desc1, desc2, threshold=0.5):
         of matching descriptors
     """
     matches = []
-
     N = desc1.shape[0]
     dists = cdist(desc1, desc2)
 
     ### YOUR CODE HERE
-    pass
+    for i in range(N):
+        [min, minIndex, second, secondIndex] = minAndSecond(dists[i, :])
+        if min / second < threshold:
+            matches.append(np.array([i, minIndex]))
+    matches = np.asarray(matches)
     ### END YOUR CODE
 
     return matches
+
+
+def minAndSecond(numbers):
+    min, second = float('inf'), float('inf')
+    minIndex = 0
+    secondIndex = 0
+    for i in range(numbers.shape[0]):
+        if numbers[i] <= min:
+            min, second = numbers[i], min
+            secondIndex = minIndex
+            minIndex = i
+        elif numbers[i] < second:
+            second = numbers[i]
+            secondIndex = i
+    return [min, minIndex, second, secondIndex]
 
 
 def fit_affine_matrix(p1, p2):
