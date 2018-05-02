@@ -53,3 +53,12 @@ which is a common feature in most of our smart phones.
 ### Part 3 Transformation Estimation
 ### Part 4 RANSAC
 ### Part 5 Histogram of Oriented Gradients (HOG) 
+
+未完成：卡在RANSAC的threshold参数上了。
+
+## Homework4：Resizing - Seam Carving
+Moving beyond pixels and edges, homework 4 takes a wider view of the image and asks students to use a dynamic programming algorithm to define the energy of certain regions in an image. 
+
+This energy definition allows us to find regions that are important, enabling different monitors with varying sizes (large projections, medium laptop screens and small cell phones) to display only the important portions of an image. 
+
+We specifically ask students to implements different versions of seam carving while preserving the structure of objects in images.
