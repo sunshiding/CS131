@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 from skimage import filters
 from skimage.util.shape import view_as_blocks
@@ -168,11 +170,12 @@ def fit_affine_matrix(p1, p2):
 
     assert (p1.shape[0] == p2.shape[0]), \
         'Different number of points in p1 and p2'
+
     p1 = pad(p1)
     p2 = pad(p2)
 
     ### YOUR CODE HERE
-    pass
+    H, residuals, rank, s = np.linalg.lstsq(p2, p1)
     ### END YOUR CODE
 
     # Sometimes numerical issues cause least-squares to produce the last
@@ -212,9 +215,25 @@ def ransac(keypoints1, keypoints2, matches, n_iters=200, threshold=20):
     max_inliers = np.zeros(N)
     n_inliers = 0
 
+    H = np.zeros((3, 3))
     # RANSAC iteration start
     ### YOUR CODE HERE
-    pass
+    order = list(range(N))
+    for i in range(n_iters):
+        slice = random.sample(order, n_samples)
+
+        p1pad = matched1[slice]
+        p2pad = matched2[slice]
+        p1unpad = unpad(p1pad)
+        p2unpad = unpad(p2pad)
+
+        transH = fit_affine_matrix(p1unpad, p2unpad)
+        resultpad = np.dot(matched1, transH)
+        result = unpad(resultpad)
+        label = unpad(matched2)
+        distance = np.sqrt(np.square(result - label))
+        distance = distance < 1
+
     ### END YOUR CODE
     return H, matches[max_inliers]
 
