@@ -20,7 +20,10 @@ def energy_function(image):
     out = np.zeros((H, W))
 
     ### YOUR CODE HERE
-    pass
+    grayImg = color.rgb2gray(image)
+    dx = np.gradient(grayImg, axis=0)
+    dy = np.gradient(grayImg, axis=1)
+    out = np.abs(dx) + np.abs(dy)
     ### END YOUR CODE
 
     return out
@@ -62,7 +65,15 @@ def compute_cost(image, energy, axis=1):
     paths[0] = 0  # we don't care about the first row of paths
 
     ### YOUR CODE HERE
-    pass
+    Padding = np.ones((H, W + 2)) * np.inf  # set a bigger zero matrix
+    Padding[:, 1:1 + W] = energy  # copy the image to the center part
+    for row in range(1, H):
+        for x in range(1, W + 1):
+            minvalue = np.min([Padding[row - 1, x - 1], Padding[row - 1, x], Padding[row - 1, x + 1]])
+            minindex = np.argmin([Padding[row - 1, x - 1], Padding[row - 1, x], Padding[row - 1, x + 1]]) - 1
+            Padding[row, x] = Padding[row, x] + minvalue
+            paths[row, x - 1] = minindex
+    cost = Padding[:, 1:1 + W]
     ### END YOUR CODE
 
     if axis == 0:
@@ -99,7 +110,8 @@ def backtrack_seam(paths, end):
     seam[H - 1] = end
 
     ### YOUR CODE HERE
-    pass
+    for i in range(2, H + 1):
+        seam[H - i] = seam[H - i + 1] + paths[H - i + 1, seam[H - i + 1]]
     ### END YOUR CODE
 
     # Check that seam only contains values in [0, W-1]
@@ -128,7 +140,9 @@ def remove_seam(image, seam):
     out = None
     H, W, C = image.shape
     ### YOUR CODE HERE
-    pass
+    print(seam)
+    for i in range(H):
+        out = np.delete(image[i], seam[i], axis=1)
     ### END YOUR CODE
     out = np.squeeze(out)  # remove last dimension if C == 1
 
@@ -169,7 +183,12 @@ def reduce(image, size, axis=1, efunc=energy_function, cfunc=compute_cost):
     assert size > 0, "Size must be greater than zero"
 
     ### YOUR CODE HERE
-    pass
+    for i in range(W - size):
+        energy = energy_function(out)
+        cost, paths = compute_cost(out, energy, 1)
+        end = np.argmin(cost[-1])
+        seam = backtrack_seam(paths, end)
+        out = remove_seam(out, seam)
     ### END YOUR CODE
 
     assert out.shape[1] == size, "Output doesn't have the right shape"
