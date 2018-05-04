@@ -231,11 +231,21 @@ def ransac(keypoints1, keypoints2, matches, n_iters=200, threshold=20):
         resultpad = np.dot(matched1, transH)
         result = unpad(resultpad)
         label = unpad(matched2)
-        distance = np.sqrt(np.square(result - label))
-        distance = distance < 1
+        dis = np.sqrt(np.sum(np.square(result - label), axis=1))
+        error = dis <= threshold
+        inliers = np.count_nonzero(error)
+        if inliers > n_inliers:
+            n_inliers = inliers
+            H = transH
+            print(n_inliers)
+            print(np.where(error == True))
+            max_inliers = np.asarray(np.where(error == True))
 
     ### END YOUR CODE
-    return H, matches[max_inliers]
+    print(max_inliers[0])
+    print(matches.shape)
+
+    return H, matches[max_inliers[0]]
 
 
 def hog_descriptor(patch, pixels_per_cell=(8, 8)):
